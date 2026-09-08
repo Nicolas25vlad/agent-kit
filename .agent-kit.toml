@@ -1,0 +1,13 @@
+# agent-kit — config do projeto (IA pode editar via agent config)
+
+[paths]
+skip = ["node_modules", ".git", "dist", "build", ".next", "vendor"]
+
+[env]
+file = ".env.local"
+
+[docker]
+compose = true
+
+[meta]
+updated_at = "2026-09-08T19:31:00Z"

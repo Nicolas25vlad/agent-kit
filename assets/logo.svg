@@ -1,7 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 180" role="img" aria-labelledby="title desc">
   <title id="title">agent-kit</title>
-  <desc id="desc">Terminal prompt mark followed by the agent-kit wordmark</desc>
+  <desc id="desc">Connected agent nodes followed by the agent-kit wordmark</desc>
   <rect width="640" height="180" rx="32" fill="#111827"/>
-  <path d="M58 54 112 90 58 126M132 126h54" fill="none" stroke="#67e8f9" stroke-linecap="round" stroke-linejoin="round" stroke-width="16"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M105 90 67 57M105 90l38-33M105 90l38 33M105 90 67 123" stroke="#334155" stroke-width="8"/>
+    <path d="M105 90 67 57M105 90l38-33M105 90l38 33" stroke="#67e8f9" stroke-width="8"/>
+    <path d="M105 76 119 90 105 104 91 90Z" fill="#67e8f9" stroke="#67e8f9" stroke-width="4"/>
+    <circle cx="67" cy="57" r="11" fill="#a78bfa" stroke="#a78bfa" stroke-width="4"/>
+    <circle cx="143" cy="57" r="11" fill="#22d3ee" stroke="#22d3ee" stroke-width="4"/>
+    <circle cx="143" cy="123" r="11" fill="#f472b6" stroke="#f472b6" stroke-width="4"/>
+    <path d="M67 123h-8" stroke="#334155" stroke-width="8"/>
+    <circle cx="49" cy="123" r="7" fill="#334155" stroke="#334155" stroke-width="4"/>
+  </g>
   <text x="220" y="113" fill="#f9fafb" font-family="Inter,Segoe UI,sans-serif" font-size="62" font-weight="700">agent-kit</text>
 </svg>

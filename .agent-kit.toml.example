@@ -1,0 +1,14 @@
+# .agent-kit.toml — config do projeto (commitável para o time)
+
+[commands]
+# test = "bun test"
+# lint = "bun run lint"
+
+[paths]
+skip = ["node_modules", ".git", "dist", "build", "vendor"]
+
+[env]
+file = ".env.local"
+
+[docker]
+compose = true
