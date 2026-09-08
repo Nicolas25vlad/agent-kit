@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# agent-kit — CLI macro para agentes de IA (macOS, Linux, WSL)
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+export PYTHONPATH="${ROOT}/src${PYTHONPATH:+:$PYTHONPATH}"
+
+if command -v python3 >/dev/null 2>&1; then
+  exec python3 -m agent_kit "$@"
+fi
+
+if command -v python >/dev/null 2>&1; then
+  exec python -m agent_kit "$@"
+fi
+
+echo '{"ok":false,"summary":"Python 3 não encontrado","error":{"code":"PYTHON_MISSING","message":"Instale Python 3.9+ ou use WSL/Linux/macOS com python3 no PATH"}}' >&2
+exit 1
