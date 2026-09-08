@@ -12,6 +12,16 @@
   <img src="https://img.shields.io/badge/python-3.9%2B-3776AB" alt="Python 3.9+"><a href="https://github.com/Nicolas25vlad/agent-kit/stargazers"><img src="https://img.shields.io/github/stars/Nicolas25vlad/agent-kit?style=flat" alt="GitHub stars"></a>
 </p>
 
+## Instalação rápida
+
+Instala ou atualiza o checkout local do `agent-kit` e registra o comando `agent` no PATH:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Nicolas25vlad/agent-kit/main/install.sh | bash -s -- --remote
+```
+
+O repositório fica em `~/.local/share/agent-kit`. Execute novamente o mesmo comando para atualizar. Funciona em WSL, Linux, macOS e Git Bash; requer Git, Python 3.9+ e `curl`.
+
 ## Índice
 
 - [Visão geral](#visão-geral)
