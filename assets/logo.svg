@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 180" role="img" aria-labelledby="title desc">
+  <title id="title">agent-kit</title>
+  <desc id="desc">Terminal prompt mark followed by the agent-kit wordmark</desc>
+  <rect width="640" height="180" rx="32" fill="#111827"/>
+  <path d="M58 54 112 90 58 126M132 126h54" fill="none" stroke="#67e8f9" stroke-linecap="round" stroke-linejoin="round" stroke-width="16"/>
+  <text x="220" y="113" fill="#f9fafb" font-family="Inter,Segoe UI,sans-serif" font-size="62" font-weight="700">agent-kit</text>
+</svg>
