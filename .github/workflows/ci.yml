@@ -27,4 +27,4 @@ jobs:
           python -m agent_kit --version
           python -m agent_kit --help
         env:
-          PYTHONPATH: src
+          PYTHONPATH: ${{ github.workspace }}/src
