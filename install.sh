@@ -17,7 +17,7 @@ if [ "${1:-}" = "--remote" ]; then
     git clone --quiet --branch "$REF" "$REPO_URL" "$REMOTE_ROOT"
   fi
 
-  exec "$REMOTE_ROOT/install.sh"
+  exec bash "$REMOTE_ROOT/install.sh"
 fi
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
