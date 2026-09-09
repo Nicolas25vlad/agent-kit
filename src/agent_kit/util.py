@@ -31,13 +31,21 @@ def parse_status(porcelain: str) -> dict[str, Any]:
                 branch = line.removeprefix("# branch.head ").strip()
             elif line.startswith("# branch.ab "):
                 p = line.split()
-                if len(p) >= 3:
-                    ahead, behind = int(p[1].lstrip("+") or 0), int(p[2].lstrip("-") or 0)
+                if len(p) >= 4:
+                    ahead, behind = int(p[2].lstrip("+") or 0), int(p[3].lstrip("-") or 0)
             continue
         if line.startswith("u ") or "DD" in line[:2] or "AA" in line[:2]:
             conflicted.append(line[3:].strip())
         elif line.startswith("? "):
             untracked.append(line[2:].strip())
+        elif line.startswith(("1 ", "2 ")):
+            p = line.split(" ", 8)
+            if len(p) >= 9:
+                xy, path = p[1], p[8].strip()
+                if xy[0] != ".":
+                    staged.append(path)
+                if xy[1] != ".":
+                    unstaged.append(path)
         elif len(line) >= 4 and line[2] == " ":
             xy, path = line[:2], line[3:].strip()
             if xy[0] not in " ?":

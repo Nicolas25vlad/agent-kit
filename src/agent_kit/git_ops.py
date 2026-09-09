@@ -194,16 +194,63 @@ def sync(cwd, *, rebase, dry_run, verbose, human) -> int:
     return emit(ok=True, command="git.sync", summary="sync ok", verbose=verbose, human=human)
 
 
-def diff(cwd, *, base, stat_only, max_lines, verbose, human) -> int:
+def diff(cwd, *, base, stat_only, cached, check, max_lines, verbose, human) -> int:
     root = require_git(cwd, "git.diff")
     if not isinstance(root, str):
         return root
-    target = base or "HEAD"
-    cmd = ["git", "diff", "--stat", target] if stat_only else ["git", "diff", target]
+    target = base or (None if cached else "HEAD")
+    cmd = ["git", "diff"]
+    if cached:
+        cmd.append("--cached")
+    if check:
+        cmd.append("--check")
+    if stat_only:
+        cmd.append("--stat")
+    if target:
+        cmd.append(target)
     diff_r = run(cmd, cwd=root, timeout=30)
-    files = run(["git", "diff", "--name-only", target], cwd=root).stdout.splitlines()
-    return emit(ok=True, command="git.diff", summary=f"{len(files)} arquivo(s) vs {target}",
-                data={"base": target, "files": files[:100], "diff": tail(diff_r.stdout, max_lines=max_lines)}, verbose=verbose, human=human)
+    names_cmd = ["git", "diff"] + (["--cached"] if cached else []) + ["--name-only"] + ([target] if target else [])
+    files = run(names_cmd, cwd=root).stdout.splitlines()
+    return emit(ok=diff_r.ok, command="git.diff", summary=f"{len(files)} arquivo(s)" + (f" vs {target}" if target else " staged"),
+                data={"base": target, "cached": cached, "check": check, "files": files[:100], "diff": tail(diff_r.stdout or diff_r.stderr, max_lines=max_lines)}, verbose=verbose, human=human)
+
+
+def remote(cwd, *, verbose, human) -> int:
+    root = require_git(cwd, "git.remote")
+    if not isinstance(root, str):
+        return root
+    r = run(["git", "remote", "-v"], cwd=root)
+    return emit(ok=r.ok, command="git.remote", summary="remotes listados", data={"output": r.stdout.strip()}, verbose=verbose, human=human)
+
+
+def config(cwd, *, key, value, global_scope, verbose, human) -> int:
+    root = require_git(cwd, "git.config")
+    if not isinstance(root, str):
+        return root
+    cmd = ["git", "config"] + (["--global"] if global_scope else []) + [key] + ([value] if value is not None else [])
+    r = run(cmd, cwd=root)
+    return emit(ok=r.ok, command="git.config", summary=f"config {key}", data={"key": key, "value": r.stdout.strip() if value is None else value, "global": global_scope}, verbose=verbose, human=human)
+
+
+def tag(cwd, *, name, message, delete, verbose, human) -> int:
+    root = require_git(cwd, "git.tag")
+    if not isinstance(root, str):
+        return root
+    if delete and name:
+        r = run(["git", "tag", "-d", name], cwd=root)
+    elif name:
+        r = run(["git", "tag"] + (["-a", name, "-m", message] if message else [name]), cwd=root)
+    else:
+        r = run(["git", "tag", "--sort=-creatordate"], cwd=root)
+    return emit(ok=r.ok, command="git.tag", summary="tags listadas" if not name else f"tag {name}", data={"output": (r.stdout or r.stderr).strip()}, verbose=verbose, human=human)
+
+
+def check_ignore(cwd, *, paths, verbose, human) -> int:
+    root = require_git(cwd, "git.check-ignore")
+    if not isinstance(root, str):
+        return root
+    r = run(["git", "check-ignore", "-v", "--"] + paths, cwd=root)
+    return emit(ok=r.ok, command="git.check-ignore", summary=f"{len(paths)} caminho(s) consultado(s)", data={"ignored": r.stdout.splitlines()}, verbose=verbose, human=human)
 
 
 def log(cwd, *, count: int, verbose: bool, human: bool) -> int:
