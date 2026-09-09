@@ -151,7 +151,13 @@ O CLI não substitui a revisão humana. Ele organiza o contexto e reduz comandos
 | `agent git sync --rebase` | fetch, pull e push sincronizados |
 | `agent git log` | histórico compacto |
 | `agent git diff --stat` | resumo da diferença |
+| `agent git diff --cached` | diferença staged |
+| `agent git diff --check` | verifica whitespace problemático |
 | `agent git branch` | branch atual e branches locais |
+| `agent git remote` | lista remotes |
+| `agent git config user.name` | consulta configuração Git |
+| `agent git tag` | lista tags |
+| `agent git check-ignore arquivo` | verifica se um caminho é ignorado |
 | `agent git stash push -m "..."` | guarda alterações temporariamente |
 | `agent git conflicts` | localiza conflitos e marcadores |
 
@@ -167,6 +173,21 @@ O CLI não substitui a revisão humana. Ele organiza o contexto e reduz comandos
 | `agent pr merge -n 12` | solicita merge pela estratégia escolhida |
 | `agent ci status` | status dos workflows recentes |
 | `agent ci logs -n RUN_ID` | logs de um workflow |
+| `agent ci view -n RUN_ID` | resumo de um workflow |
+| `agent ci watch -n RUN_ID` | acompanha até terminar |
+| `agent ci workflows` | lista workflows |
+| `agent ci run workflow.yml --ref main` | dispara um workflow |
+
+### GitHub e releases
+
+| Comando | Uso |
+| --- | --- |
+| `agent github auth` | consulta autenticação do GitHub CLI |
+| `agent github api repos/OWNER/REPO` | consulta a API do GitHub |
+| `agent github api repos/OWNER/REPO --method PUT --input body.json` | envia payload JSON para a API |
+| `agent github release list` | lista releases |
+| `agent github release view --tag v1.0.0` | consulta uma release |
+| `agent github release create --tag v1.0.0` | cria uma release com notas automáticas |
 
 ### Arquivos, projeto e execução
 
@@ -189,6 +210,15 @@ Veja todas as opções com:
 ```bash
 agent --help
 agent <domínio> --help
+```
+
+Para um binário externo ainda não mapeado, use `agent exec`. Ele não abre um shell intermediário e sempre retorna JSON:
+
+```bash
+agent exec git status --short
+agent exec gh run view 12345
+agent exec wsl.exe bash -lc "agent repo info"
+agent exec python --version
 ```
 
 ## Saída JSON

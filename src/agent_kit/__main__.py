@@ -16,6 +16,10 @@ def build_parser() -> argparse.ArgumentParser:
 
     sub = p.add_subparsers(dest="domain", required=True)
 
+    external = sub.add_parser("exec", help="executa um binário sem shell")
+    external.add_argument("program")
+    external.add_argument("args", nargs=argparse.REMAINDER)
+
     # prep
     prep = sub.add_parser("prep", help="contexto inicial em 1 turno")
     prep_sub = prep.add_subparsers(dest="action", required=True)
@@ -36,12 +40,16 @@ def build_parser() -> argparse.ArgumentParser:
     cm.add_argument("-m", "--message", required=True); cm.add_argument("--all", action="store_true")
     g.add_parser("suggest")
     sy = g.add_parser("sync"); sy.add_argument("--rebase", action="store_true"); sy.add_argument("--dry-run", action="store_true")
-    d = g.add_parser("diff"); d.add_argument("--base", default="HEAD"); d.add_argument("--stat", action="store_true"); d.add_argument("--max-lines", type=int, default=60)
+    d = g.add_parser("diff"); d.add_argument("--base"); d.add_argument("--stat", action="store_true"); d.add_argument("--cached", action="store_true"); d.add_argument("--check", action="store_true"); d.add_argument("--max-lines", type=int, default=60)
     lg = g.add_parser("log"); lg.add_argument("-n", type=int, default=10)
     br = g.add_parser("branch"); br.add_argument("--create"); br.add_argument("--switch")
     st = g.add_parser("stash"); st.add_argument("stash_action", choices=["push", "pop", "list"], nargs="?", default="list"); st.add_argument("-m", "--message")
     ad = g.add_parser("add"); ad.add_argument("paths", nargs="*"); ad.add_argument("--all", action="store_true")
     dc = g.add_parser("discard"); dc.add_argument("paths", nargs="*"); dc.add_argument("--all", action="store_true")
+    g.add_parser("remote")
+    cf = g.add_parser("config"); cf.add_argument("key"); cf.add_argument("value", nargs="?"); cf.add_argument("--global", dest="global_scope", action="store_true")
+    tg = g.add_parser("tag"); tg.add_argument("--name"); tg.add_argument("--message", "-m"); tg.add_argument("--delete", action="store_true")
+    ig = g.add_parser("check-ignore"); ig.add_argument("paths", nargs="+")
     g.add_parser("conflicts")
 
     pr = sub.add_parser("pr")
@@ -67,6 +75,16 @@ def build_parser() -> argparse.ArgumentParser:
     ci_sub.add_parser("status")
     cil = ci_sub.add_parser("logs")
     cil.add_argument("-n", "--run-id", type=int, dest="run_id")
+    civ = ci_sub.add_parser("view"); civ.add_argument("-n", "--run-id", type=int, required=True, dest="run_id")
+    ciw = ci_sub.add_parser("watch"); ciw.add_argument("-n", "--run-id", type=int, required=True, dest="run_id")
+    ci_sub.add_parser("workflows")
+    cir = ci_sub.add_parser("run"); cir.add_argument("workflow"); cir.add_argument("--ref")
+
+    github = sub.add_parser("github")
+    github_sub = github.add_subparsers(dest="action", required=True)
+    github_sub.add_parser("auth")
+    api = github_sub.add_parser("api"); api.add_argument("endpoint"); api.add_argument("--method", default="GET"); api.add_argument("--input", dest="input_file")
+    rel = github_sub.add_parser("release"); rel.add_argument("release_action", choices=["list", "view", "create"]); rel.add_argument("--tag"); rel.add_argument("--title")
 
     cfg = sub.add_parser("config")
     cfg_sub = cfg.add_subparsers(dest="action", required=True)
@@ -139,6 +157,10 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     v, h = args.verbose, args.human
 
+    if args.domain == "exec":
+        from agent_kit import exec_ops
+        return exec_ops.command(args.program, args.args, verbose=v, human=h)
+
     if args.domain == "doctor":
         from agent_kit import doctor_ops
         return doctor_ops.doctor(verbose=v, human=h)
@@ -158,12 +180,16 @@ def main(argv: list[str] | None = None) -> int:
         if a == "commit": return git_ops.commit(None, message=args.message, all_files=args.all, verbose=v, human=h)
         if a == "suggest": return git_ops.suggest_msg(None, verbose=v, human=h)
         if a == "sync": return git_ops.sync(None, rebase=args.rebase, dry_run=args.dry_run, verbose=v, human=h)
-        if a == "diff": return git_ops.diff(None, base=args.base, stat_only=args.stat, max_lines=args.max_lines, verbose=v, human=h)
+        if a == "diff": return git_ops.diff(None, base=args.base, stat_only=args.stat, cached=args.cached, check=args.check, max_lines=args.max_lines, verbose=v, human=h)
         if a == "log": return git_ops.log(None, count=args.n, verbose=v, human=h)
         if a == "branch": return git_ops.branch(None, create=args.create, switch=args.switch, verbose=v, human=h)
         if a == "stash": return git_ops.stash(None, action=args.stash_action, message=args.message, verbose=v, human=h)
         if a == "add": return git_ops.stage(None, paths=args.paths, all_files=args.all, verbose=v, human=h)
         if a == "discard": return git_ops.discard(None, all_files=args.all, paths=args.paths, verbose=v, human=h)
+        if a == "remote": return git_ops.remote(None, verbose=v, human=h)
+        if a == "config": return git_ops.config(None, key=args.key, value=args.value, global_scope=args.global_scope, verbose=v, human=h)
+        if a == "tag": return git_ops.tag(None, name=args.name, message=args.message, delete=args.delete, verbose=v, human=h)
+        if a == "check-ignore": return git_ops.check_ignore(None, paths=args.paths, verbose=v, human=h)
         if a == "conflicts": return git_ops.conflicts(None, verbose=v, human=h)
 
     if args.domain == "pr":
@@ -210,7 +236,17 @@ def main(argv: list[str] | None = None) -> int:
         from agent_kit import ci_ops
         if args.action == "status":
             return ci_ops.status(None, verbose=v, human=h)
-        return ci_ops.logs(None, run_id=args.run_id, verbose=v, human=h)
+        if args.action == "logs": return ci_ops.logs(None, run_id=args.run_id, verbose=v, human=h)
+        if args.action == "view": return ci_ops.view(None, run_id=args.run_id, verbose=v, human=h)
+        if args.action == "watch": return ci_ops.watch(None, run_id=args.run_id, verbose=v, human=h)
+        if args.action == "workflows": return ci_ops.workflows(None, verbose=v, human=h)
+        return ci_ops.workflow_run(None, workflow=args.workflow, ref=args.ref, verbose=v, human=h)
+
+    if args.domain == "github":
+        from agent_kit import github_ops
+        if args.action == "auth": return github_ops.auth_status(verbose=v, human=h)
+        if args.action == "api": return github_ops.api(args.endpoint, method=args.method, input_file=args.input_file, verbose=v, human=h)
+        return github_ops.release(args.release_action, tag=args.tag, title=args.title, verbose=v, human=h)
 
     if args.domain == "config":
         from agent_kit import config_ops

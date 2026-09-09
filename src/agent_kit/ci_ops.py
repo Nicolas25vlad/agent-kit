@@ -76,3 +76,41 @@ def logs(cwd, *, run_id: int | None, verbose: bool, human: bool) -> int:
         verbose=verbose,
         human=human,
     )
+
+
+def view(cwd, *, run_id: int | None, verbose: bool, human: bool) -> int:
+    root = _gh_root(cwd, "ci.view")
+    if not isinstance(root, str):
+        return root
+    selector = str(run_id) if run_id else ""
+    if not selector:
+        return fail("ci.view", "RUN_ID_REQUIRED", "Informe --run-id")
+    r = run(["gh", "run", "view", selector], cwd=root, timeout=60)
+    return emit(ok=r.ok, command="ci.view", summary=f"run {selector}", data={"run_id": selector, "output": tail(r.stdout or r.stderr, max_chars=8000)}, verbose=verbose, human=human)
+
+
+def watch(cwd, *, run_id: int | None, verbose: bool, human: bool) -> int:
+    root = _gh_root(cwd, "ci.watch")
+    if not isinstance(root, str):
+        return root
+    selector = str(run_id) if run_id else ""
+    if not selector:
+        return fail("ci.watch", "RUN_ID_REQUIRED", "Informe --run-id")
+    r = run(["gh", "run", "watch", selector, "--exit-status"], cwd=root, timeout=900)
+    return emit(ok=r.ok, command="ci.watch", summary=f"watch run {selector}", data={"run_id": selector, "output": tail(r.stdout or r.stderr, max_chars=8000)}, verbose=verbose, human=human)
+
+
+def workflows(cwd, *, verbose: bool, human: bool) -> int:
+    root = _gh_root(cwd, "ci.workflows")
+    if not isinstance(root, str):
+        return root
+    r = run(["gh", "workflow", "list"], cwd=root)
+    return emit(ok=r.ok, command="ci.workflows", summary="workflows listados", data={"output": r.stdout.strip()}, verbose=verbose, human=human)
+
+
+def workflow_run(cwd, *, workflow: str, ref: str | None, verbose: bool, human: bool) -> int:
+    root = _gh_root(cwd, "ci.workflow-run")
+    if not isinstance(root, str):
+        return root
+    r = run(["gh", "workflow", "run", workflow] + (["--ref", ref] if ref else []), cwd=root)
+    return emit(ok=r.ok, command="ci.workflow-run", summary=f"workflow {workflow} disparado", data={"workflow": workflow, "ref": ref, "output": tail(r.stdout or r.stderr)}, verbose=verbose, human=human)
