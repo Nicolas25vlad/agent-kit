@@ -15,7 +15,7 @@ if (-not $python) { throw 'Python 3.9+ não encontrado. Instale Python e execute
 
 New-Item -ItemType Directory -Force -Path $bin | Out-Null
 $run = if ($python.Source -match '\s') { "`"$($python.Source)`"" } else { $python.Source }
-("@echo off`r`ncd /d `"$root`"`r`nset `"PYTHONPATH=$root\src;%PYTHONPATH%`"`r`n$run $pythonArgs -m agent_kit %*`r`n") | Set-Content -Encoding ascii $wrapper
+("@echo off`r`nset `"PYTHONPATH=$root\src;%PYTHONPATH%`"`r`n$run $pythonArgs -m agent_kit %*`r`n") | Set-Content -Encoding ascii $wrapper
 
 $userPath = [Environment]::GetEnvironmentVariable('Path', 'User') -split ';' | Where-Object { $_ }
 if ($userPath -notcontains $bin) {
